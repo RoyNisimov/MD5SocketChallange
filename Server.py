@@ -50,12 +50,17 @@ class Server:
         try:
             # Gets the Hello message
             msg = conn.recv(4096).decode("utf-8")
+            while "\n" not in msg:
+                msg += conn.recv(4096).decode("utf-8")
             first_msg = msg.split("\n")[0]
             d = json.loads(first_msg)
-            if d["version"] != self.version: return
-            if d["type"] != "HELLO": return
+            if d["version"] != self.version:
+                print("returning")
+                return
+            if d["type"] != "HELLO":
+                print("returning 2")
+                return
             self.clients.append(Connection(conn, d["client_name"], d["processes"]))
-
             # Sends the welcome message
             d = {"version": self.version, "type": "WELCOME", "server_name": self.server_name, "algorithm": "md5", "target_hash": self.hash_md5}
             msg = json.dumps(d) + "\n"
@@ -64,12 +69,7 @@ class Server:
         except Exception as e:
             print(e)
 
-    def get_message(self, connection: socket.socket):
-        try:
-            msg = connection.recv(4096)
-        except Exception as e:
-            print(e)
-            return '{"error": "encountered an error"}'
+
 
 if __name__ == "__main__":
 
