@@ -10,3 +10,4 @@ class Connection:
         self.client_name = client_name
         assert isinstance(processes, int)
         self.processes = processes
+        self.job_id = None
