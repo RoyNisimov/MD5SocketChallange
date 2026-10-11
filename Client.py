@@ -80,6 +80,7 @@ class Client:
         }
         msg = json.dumps(d) + "\n"
         self.sock.sendall(msg.encode())
+        self.ask_for_work()
 
 
 
@@ -98,6 +99,7 @@ class Client:
         msg = json.dumps(d) + "\n"
         self.sock.sendall(msg.encode("utf-8"))
         print("ASKING")
+        self.mode = Client.WAITING
 
 
     def listen_for_server_msg(self):
@@ -146,6 +148,15 @@ class Client:
 
     def disconnect(self):
         self.dis = True
+
+        d = {"version": self.version, "type": "GOODBYE"}
+        msg = json.dumps(d) + "\n"
+        try:
+            self.sock.sendall(msg.encode("utf-8"))
+            self.sock.close()
+        except: ...
+
+
 
 if __name__ == "__main__":
     c = Client()

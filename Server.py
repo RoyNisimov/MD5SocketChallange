@@ -80,9 +80,10 @@ class Server:
                 current_msg = msg.pop(0)
                 msg = "\n".join(msg)
                 print(msg)
-                self.handle_message(current_msg, connection_conn)
-
-
+                res = self.handle_message(current_msg, connection_conn)
+                if res == -1:
+                    break
+            connection_conn.sock.close()
         except Exception as e:
             print(e)
 
@@ -122,19 +123,9 @@ class Server:
                 self.number = d["number"]
                 print(f'NUMBER FOUND {d["number"]}')
                 self.send_stop()
-        elif d["type"] == "DONE":
-            if self.done:
-                self.send_stop()
-            if not self.done:
-                with self.mutex:
-                    start = self.start
-                    end = self.start + self.increments
-                    self.start += self.increments
-                    if self.start > self.end: self.done = True
-                d = {"version": self.version, "type": "WORK", "job_id": connection_conn.job_id, "start": start, "end": end, "target_hash": self.hash_md5, "lease_seconds": 60}
-                msg = json.dumps(d) + "\n"
-                connection_conn.sock.sendall(msg.encode("utf-8"))
-                print(f"GAVE JOB ({start} - {end})")
+        elif d["type"] == "GOODBYE":
+            self.clients.remove(connection_conn)
+            return -1
 
 
 
